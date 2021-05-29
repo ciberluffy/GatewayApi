@@ -1,0 +1,15 @@
+obj
+bin
+.vs
+.tye
+tools
+_ReSharper.Caches
+/dotnet.csproj.tar.gz
+*.user
+/output
+downloads
+plugins
+packages
+cache
+lib
+.vscode
