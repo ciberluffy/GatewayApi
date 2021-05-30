@@ -10,6 +10,8 @@ namespace MusalaSoft.GatewayApi.Repository
 
         Task<Gateway> Get(string usn);
 
+        Task<Gateway> GetForUpdate(string usn);
+
         Task CreateGateway(Gateway gateway);
 
         Task UpdateGateway(Gateway gateway);

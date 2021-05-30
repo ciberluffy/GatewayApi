@@ -24,6 +24,15 @@ namespace MusalaSoft.GatewayApi.Repository
             return (await GetAll()).FirstOrDefault(g => g.USN == usn);
         }
 
+        public async Task<Gateway> GetForUpdate(string usn) {
+            return (await _repositoryContext.gateways
+                            .AsTracking<Gateway>()
+                            .Include(g => g.Devices)
+                            .ThenInclude(x => x.Gateway)
+                            .ToListAsync())
+                    .FirstOrDefault(g => g.USN == usn);
+        }
+
         public async Task CreateGateway(Gateway gateway) {
             Create(gateway);
             await SaveAsync();

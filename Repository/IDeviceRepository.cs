@@ -10,6 +10,8 @@ namespace MusalaSoft.GatewayApi.Repository
 
         Task<IEnumerable<Device>> GetAllLonely();
 
+        Task<Device> GetForUpdate(int uid);
+
         Task CreateDevice(Device device);
 
         Task UpdateDevice(Device device);

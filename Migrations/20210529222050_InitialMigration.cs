@@ -38,6 +38,7 @@ namespace GatewayApi.Migrations
                         column: x => x.GatewayUSN,
                         principalTable: "gateways",
                         principalColumn: "USN",
+                        onUpdate: ReferentialAction.Cascade,
                         onDelete: ReferentialAction.Restrict);
                 });
 

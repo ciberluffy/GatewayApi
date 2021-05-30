@@ -74,5 +74,48 @@ namespace MusalaSoft.GatewayApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("update")]
+        public async Task<IActionResult> Update(Gateway gateway) {
+            try {
+                ValidationContext context = new ValidationContext(gateway, null, null);
+                List<ValidationResult> validationResults = new List<ValidationResult>();
+                bool valid = Validator.TryValidateObject(gateway, context, validationResults, true);
+                if (!valid)
+                {
+                    foreach (ValidationResult validationResult in validationResults)
+                    {
+                        _logger.LogError($"{validationResult.ErrorMessage}");
+                    }
+                    return BadRequest(validationResults.FirstOrDefault().ErrorMessage);
+                }
+
+                var storedGateway = await _repositoryWrapper.Gateway.GetForUpdate(gateway.USN);
+                
+                storedGateway.Address = gateway.Address;
+                storedGateway.Name = gateway.Name;
+
+                var toInsert = gateway.Devices.Where(d => 
+                                        storedGateway.Devices.Where(d2 => d2.UID == d.UID).ToList().Count == 0
+                                    ).ToList();
+
+                var toDelete = storedGateway.Devices.Where(d => 
+                                        gateway.Devices.Where(d2 => d2.UID == d.UID).ToList().Count == 0
+                                    ).ToList();                               
+
+                foreach(var device in toDelete) {
+                    storedGateway.Devices.Remove(device);
+                }
+                foreach(var device in toInsert) {
+                    device.Gateway = gateway;
+                    storedGateway.Devices.Add(device);
+                }
+                await _repositoryWrapper.Gateway.UpdateGateway(storedGateway);
+
+                return Ok();
+            } catch (Exception ex) {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

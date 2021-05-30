@@ -71,5 +71,57 @@ namespace MusalaSoft.GatewayApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("update")]
+        public async Task<IActionResult> Update(Device device) {
+            try {
+                var storeDevice = await _repositoryWrapper.Device.GetForUpdate(device.UID);
+                storeDevice.Created = device.Created;
+                storeDevice.Online = device.Online;
+                storeDevice.Vendor = device.Vendor;
+                
+                if(storeDevice?.Gateway?.USN != device?.Gateway?.USN || storeDevice?.Gateway?.USN == null) {
+                    if(storeDevice.Gateway != null) {
+                        var gatewayToDetach = await _repositoryWrapper.Gateway.GetForUpdate(storeDevice.Gateway.USN);
+                        gatewayToDetach.Devices.Remove(storeDevice);
+                        await _repositoryWrapper.Gateway.UpdateGateway(gatewayToDetach);
+                    }
+                    if(device.Gateway != null) {
+                        var gatewayToAttach = await _repositoryWrapper.Gateway.GetForUpdate(device.Gateway.USN);
+                        gatewayToAttach.Devices.Add(storeDevice);
+                        await _repositoryWrapper.Gateway.UpdateGateway(gatewayToAttach);
+                    }
+                }
+                await _repositoryWrapper.Device.UpdateDevice(storeDevice);
+
+                /*var exist = _repositoryWrapper.Device.Exist(device.UID);
+                if(exist) {
+                    return BadRequest("The device UID is already taken");
+                }
+
+                var toCreate = new Device(){
+                    Created = device.Created,
+                    Online = device.Online,
+                    UID = device.UID,
+                    Vendor = device.Vendor
+                };
+                await _repositoryWrapper.Device.CreateDevice(toCreate);
+                var gateway = await _repositoryWrapper.Gateway.Get(device.Gateway?.USN ?? "");
+                if(gateway != null) {
+                    if(gateway.Devices == null) 
+                        gateway.Devices = new List<Device>();
+                    gateway.Devices.Add(toCreate);
+                    await _repositoryWrapper.Gateway.UpdateGateway(gateway);
+                }*/
+
+                return Ok();
+            }
+            catch(SqlException ex) {
+                return BadRequest(ex.Message);
+            }
+            catch(Exception ex) {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
