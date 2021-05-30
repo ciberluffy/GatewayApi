@@ -1,12 +1,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MusalaSoft.GatewayApi.Model
 {
     public class Device
     {
         [Key]
-        [Required]
         public int UID { get; set; }
 
         public virtual Gateway Gateway { get; set; }

@@ -20,8 +20,17 @@ namespace MusalaSoft.GatewayApi.Repository
             return gateways.OrderBy(x => x.USN);
         }
 
+        public async Task<Gateway> Get(string usn) {
+            return (await GetAll()).FirstOrDefault(g => g.USN == usn);
+        }
+
         public async Task CreateGateway(Gateway gateway) {
             Create(gateway);
+            await SaveAsync();
+        }
+
+        public async Task UpdateGateway(Gateway gateway) {
+            Update(gateway);
             await SaveAsync();
         }
     }

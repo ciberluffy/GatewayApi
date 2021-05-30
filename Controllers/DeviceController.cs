@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MusalaSoft.GatewayApi.Model;
 using MusalaSoft.GatewayApi.Repository;
+using Microsoft.Data.SqlClient;
 
 namespace MusalaSoft.GatewayApi.Controllers
 {
@@ -31,6 +32,39 @@ namespace MusalaSoft.GatewayApi.Controllers
         [HttpGet("lonely")]
         public async Task<IEnumerable<Device>> GetAllLonely(){
             return await _repositoryWrapper.Device.GetAllLonely();
+        }
+
+        [HttpPost("create")]
+        public async Task<IActionResult> Create(Device device) {
+            try {
+                var exist = _repositoryWrapper.Device.Exist(device.UID);
+                if(exist) {
+                    return BadRequest("The device UID is already taken");
+                }
+
+                var toCreate = new Device(){
+                    Created = device.Created,
+                    Online = device.Online,
+                    UID = device.UID,
+                    Vendor = device.Vendor
+                };
+                await _repositoryWrapper.Device.CreateDevice(toCreate);
+                var gateway = await _repositoryWrapper.Gateway.Get(device.Gateway?.USN ?? "");
+                if(gateway != null) {
+                    if(gateway.Devices == null) 
+                        gateway.Devices = new List<Device>();
+                    gateway.Devices.Add(toCreate);
+                    await _repositoryWrapper.Gateway.UpdateGateway(gateway);
+                }
+
+                return Ok();
+            }
+            catch(SqlException ex) {
+                return BadRequest(ex.Message);
+            }
+            catch(Exception ex) {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

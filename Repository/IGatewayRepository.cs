@@ -8,6 +8,10 @@ namespace MusalaSoft.GatewayApi.Repository
     {
         Task<IEnumerable<Gateway>> GetAll();
 
+        Task<Gateway> Get(string usn);
+
         Task CreateGateway(Gateway gateway);
+
+        Task UpdateGateway(Gateway gateway);
     }
 }

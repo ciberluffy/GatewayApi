@@ -25,9 +25,18 @@ namespace MusalaSoft.GatewayApi.Repository
             return devices.OrderBy(x => x.UID);
         }
 
+        public async Task CreateDevice(Device device) {
+            Create(device);
+            await SaveAsync();
+        }
+
         public async Task UpdateDevice(Device device) {
             Update(device);
             await SaveAsync();
+        }
+
+        public bool Exist(int uid) {
+            return _repositoryContext.devices.FirstOrDefault(d => d.UID == uid) != null;
         }
     }
 }

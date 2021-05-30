@@ -10,8 +10,8 @@ using MusalaSoft.GatewayApi.Data;
 namespace GatewayApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210527182917_GatewayColumnUpperCase")]
-    partial class GatewayColumnUpperCase
+    [Migration("20210529222050_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
