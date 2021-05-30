@@ -43,8 +43,6 @@ namespace GatewayXUnit
             {
                 contextGateway.Devices.Should().HaveCount(gateways.FirstOrDefault(g => g.USN == contextGateway.USN).Devices.Count);
             }
-
-            gateways.First().Devices.Should().NotBeEmpty().And.HaveCount(2);
         }
 
         [Theory]
