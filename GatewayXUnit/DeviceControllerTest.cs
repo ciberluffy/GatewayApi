@@ -62,5 +62,38 @@ namespace GatewayXUnit
             gatewayWithDevice.Devices.Should().HaveCount(deviceCount - 1);
             deviceAfterRemove.Gateway.Should().Be(null);
         }
+
+
+        [Fact(DisplayName = "Store Device")]
+        public async Task StoreDeviceTest()
+        {
+            var devices = _fixture.context.Set<Device>().Local.ToList();
+            var devicesInitialCount = devices.Count;
+
+            var gatewayAvailable = _fixture.context.Set<Gateway>().Local.FirstOrDefault(g => g.Devices.Count < 10);
+            var gatewayAvailableDevicesInitialCount = gatewayAvailable.Devices.Count;
+            
+            if (gatewayAvailable != null)
+            {
+                _fixture.context.Entry(gatewayAvailable).State = EntityState.Detached;
+            }
+            _fixture.context.SaveChanges();
+
+            var deviceWithGateway = new Device()
+            {
+                UID = 30,
+                Vendor = "vendor-30",
+                Online = true,
+                Created = DateTime.Now,
+                Gateway = gatewayAvailable
+            };
+
+            await _unitUnderTesting.Create(deviceWithGateway);
+
+            devices = await _fixture.context.devices.ToListAsync();
+            devices.Should().HaveCount(devicesInitialCount + 1);
+            gatewayAvailable = _fixture.context.Set<Gateway>().Local.FirstOrDefault(g => g.USN == gatewayAvailable.USN);
+            gatewayAvailable.Devices.Should().HaveCount(gatewayAvailableDevicesInitialCount + 1);
+        }
     }
 }

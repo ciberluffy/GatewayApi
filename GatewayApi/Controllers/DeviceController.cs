@@ -54,10 +54,20 @@ namespace MusalaSoft.GatewayApi.Controllers
                     Vendor = device.Vendor
                 };
                 await _repositoryWrapper.Device.CreateDevice(toCreate);
-                var gateway = await _repositoryWrapper.Gateway.Get(device.Gateway?.USN ?? "");
-                if(gateway != null) {
+
+                var gateway = await _repositoryWrapper.Gateway.GetForUpdate(device.Gateway?.USN ?? "");
+                if (gateway != null) {
                     if(gateway.Devices == null) 
                         gateway.Devices = new List<Device>();
+
+                    var toInsert = device.Gateway.Devices.Where(d =>
+                                        gateway.Devices.Where(d2 => d2.UID == d.UID).ToList().Count == 0
+                                    ).ToList();
+
+                    foreach (var item in toInsert)
+                    {
+                        gateway.Devices.Add(item);
+                    }
                     gateway.Devices.Add(toCreate);
                     await _repositoryWrapper.Gateway.UpdateGateway(gateway);
                 }

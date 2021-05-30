@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MusalaSoft.GatewayApi.Controllers;
@@ -81,5 +82,98 @@ namespace GatewayXUnit
             }
         }
 
+        [Fact(DisplayName = "IPv4 validation when create device")]
+        public async Task ValidateIPv4AddressWhenCreateGateway()
+        {
+            var goodIPv4Address = "127.0.0.1";
+            var badIPv4Address = "127.0.0.257";
+
+            var gateways = await _fixture.context.gateways.ToListAsync();
+            var gatewayInitialCount = gateways.Count;
+
+            var badGateway = new Gateway()
+            {
+                USN = Guid.NewGuid().ToString(),
+                Name = "badAddressGateway",
+                Devices = null,
+                Address = badIPv4Address
+            };
+
+            var createResult = await _unitUnderTesting.Create(badGateway) as BadRequestObjectResult;
+            createResult.StatusCode.Should().Be(400);
+            createResult.Value.ToString().Should().Be("The Address must be \"d.d.d.d\" with d in range 0-255");
+            gateways = await _fixture.context.gateways.ToListAsync();
+            gateways.Should().HaveCount(gatewayInitialCount);
+
+            var goodGateway = new Gateway()
+            {
+                USN = Guid.NewGuid().ToString(),
+                Name = "goodAddressGateway",
+                Devices = null,
+                Address = goodIPv4Address
+            };
+
+            await _unitUnderTesting.Create(goodGateway);
+            var gatewaysAfterCreate = await _fixture.context.gateways.ToListAsync();
+            gatewaysAfterCreate.Should().HaveCount(gatewayInitialCount + 1);
+
+        }
+
+        [Fact(DisplayName = "Gateway List Devices Validation Count <= 10")]
+        public async Task ValidateGatewayListOfDeviceLenghtLessThan10()
+        {
+            var gateways = await _fixture.context.gateways.ToListAsync();
+            var gatewayInitialCount = gateways.Count;
+
+            var gatewayTooManyDevices = new Gateway()
+            {
+                USN = Guid.NewGuid().ToString(),
+                Address = "1.2.3.8",
+                Name = "gateway-8",
+                Devices = new List<Device>() {
+                        new Device() { UID = 11, Vendor = "device-11", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 12, Vendor = "device-12", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 13, Vendor = "device-13", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 14, Vendor = "device-14", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 15, Vendor = "device-15", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 16, Vendor = "device-16", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 17, Vendor = "device-17", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 18, Vendor = "device-18", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 19, Vendor = "device-19", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 20, Vendor = "device-20", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 21, Vendor = "device-21", Created = DateTime.Parse("30/5/2021"), Online = true },
+                    }
+            };
+
+            var createResult = await _unitUnderTesting.Create(gatewayTooManyDevices) as BadRequestObjectResult;
+            createResult.StatusCode.Should().Be(400);
+            createResult.Value.ToString().Should().Be("The field Devices must be a string or array type with a maximum length of '10'.");
+            gateways = await _fixture.context.gateways.ToListAsync();
+            gateways.Should().HaveCount(gatewayInitialCount);
+        }
+
+        [Fact(DisplayName = "Store Gateway")]
+        public async Task StoreGatewayTest()
+        {
+            var gateways = await _fixture.context.gateways.ToListAsync();
+            var gatewayInitialCount = gateways.Count;
+
+            var gatewayWithDevices = new Gateway()
+            {
+                USN = Guid.NewGuid().ToString(),
+                Address = "1.2.3.8",
+                Name = "gateway-8",
+                Devices = new List<Device>() {
+                        new Device() { UID = 11, Vendor = "device-11", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 12, Vendor = "device-12", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 13, Vendor = "device-13", Created = DateTime.Parse("30/5/2021"), Online = true },
+                        new Device() { UID = 14, Vendor = "device-14", Created = DateTime.Parse("30/5/2021"), Online = true }
+                    }
+            };
+
+            await _unitUnderTesting.Create(gatewayWithDevices);
+            gateways = await _fixture.context.gateways.ToListAsync();
+            gateways.Should().HaveCount(gatewayInitialCount + 1);
+        }
     }
 }

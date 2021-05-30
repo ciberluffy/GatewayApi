@@ -64,7 +64,7 @@ namespace MusalaSoft.GatewayApi.Controllers
 
                 await _repositoryWrapper.Gateway.CreateGateway(toCreate);
 
-                foreach(var device in gateway.Devices) {
+                foreach(var device in gateway.Devices ?? new List<Device>()) {
                     device.Gateway = toCreate;
                     await _repositoryWrapper.Device.UpdateDevice(device);
                 }
