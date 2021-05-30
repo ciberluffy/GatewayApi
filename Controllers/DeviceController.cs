@@ -34,6 +34,11 @@ namespace MusalaSoft.GatewayApi.Controllers
             return await _repositoryWrapper.Device.GetAllLonely();
         }
 
+        [HttpGet("{uid}")]
+        public async Task<Device> Get(int uid) {
+            return (await _repositoryWrapper.Device.GetAll()).FirstOrDefault(d => d.UID == uid);
+        }
+
         [HttpPost("create")]
         public async Task<IActionResult> Create(Device device) {
             try {

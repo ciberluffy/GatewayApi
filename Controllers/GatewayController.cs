@@ -35,6 +35,12 @@ namespace MusalaSoft.GatewayApi.Controllers
             return (await _repositoryWrapper.Gateway.GetAll()).Where(g => g.Devices.Count < 10).ToList();
         }
 
+        [HttpGet("{usn}")]
+        public async Task<Gateway> Get(string usn)
+        {
+            return (await _repositoryWrapper.Gateway.GetAll()).FirstOrDefault(g => g.USN == usn);
+        }
+
         [HttpPost("create")]
         public async Task<IActionResult> Create(Gateway gateway) {
             try {
