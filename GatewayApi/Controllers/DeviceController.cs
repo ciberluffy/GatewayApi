@@ -94,26 +94,6 @@ namespace MusalaSoft.GatewayApi.Controllers
                 }
                 await _repositoryWrapper.Device.UpdateDevice(storeDevice);
 
-                /*var exist = _repositoryWrapper.Device.Exist(device.UID);
-                if(exist) {
-                    return BadRequest("The device UID is already taken");
-                }
-
-                var toCreate = new Device(){
-                    Created = device.Created,
-                    Online = device.Online,
-                    UID = device.UID,
-                    Vendor = device.Vendor
-                };
-                await _repositoryWrapper.Device.CreateDevice(toCreate);
-                var gateway = await _repositoryWrapper.Gateway.Get(device.Gateway?.USN ?? "");
-                if(gateway != null) {
-                    if(gateway.Devices == null) 
-                        gateway.Devices = new List<Device>();
-                    gateway.Devices.Add(toCreate);
-                    await _repositoryWrapper.Gateway.UpdateGateway(gateway);
-                }*/
-
                 return Ok();
             }
             catch(SqlException ex) {
